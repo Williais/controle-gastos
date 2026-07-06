@@ -26,6 +26,17 @@ builder
         .GetConnectionString("DefaultConnection"
         )));
 
+// liberei o CORS para o Frontend acessar o Backend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirFrontend", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,7 +46,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseHttpsRedirection();
+app.UseCors("PermitirFrontend");
 
 app.UseAuthorization();
 
