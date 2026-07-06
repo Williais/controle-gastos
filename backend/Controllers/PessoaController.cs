@@ -43,13 +43,13 @@ namespace backend.Controllers
             }
 
             //aq estou capturando o obj que chegou e salvando na lista de Pessoa
-            var PessoaCriada = bd.Pessoa.Add(pessoa);
+            bd.Pessoa.Add(pessoa);
 
             //depois eu salvo essa nova informação no SQLite
             bd.SaveChanges();
 
             //e por fim, retorno o obj de volta pra avisar que o ID foi gerado
-            return Ok(PessoaCriada);
+            return Ok(pessoa);
         }
 
 
@@ -59,7 +59,7 @@ namespace backend.Controllers
         {
             //estou recuperando a pessoa que tenha esse ID
             
-            var pessoa = bd.Pessoas.Find(idPessoa);
+            var pessoa = bd.Pessoa.Find(idPessoa);
             //verifico se ela existe
             if (pessoa == null)
             {
@@ -67,7 +67,7 @@ namespace backend.Controllers
             }
 
             //depois eu removo ela do banco de dados e salvo a alteração
-            bd.Pessoas.Remove(pessoa);
+            bd.Pessoa.Remove(pessoa);
             bd.SaveChanges();
 
             return Ok(new { mensagem ="Pessoa apagada"});
@@ -80,10 +80,9 @@ namespace backend.Controllers
         public IActionResult ListarTotal()
         {
             // aq to buscando as pessoas e carregando as transações juntos com os dados das pessoas, ou seja, usando as duas tabelas
-            var total = bd
-            .Pessoa
-            .Include(p => p.Transacao)
-            .Select(p => new
+            var dadosDoBanco = bd.Pessoa.Include(p => p.Transacoes).ToList();
+
+            var total = dadosDoBanco.Select(p => new
             {
                 //chamando os dados da pessoa
                 p.Id,
@@ -91,17 +90,17 @@ namespace backend.Controllers
                 p.Idade,
 
                 //filtrei por tipo e somei em seguida
-                TotalReceita = p.Transacao
+                TotalReceita = p.Transacoes
                     .Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Receita)
                     .Sum(trans => trans.Valor),
 
-                TotalDespesas = p.Transacao
+                TotalDespesas = p.Transacoes
                         .Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Despesa)
                         .Sum(trans => trans.Valor),
 
                 //ai ele so vai gerar o saldo
-                SaldoLiquido = p.Transacao.Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Receita).Sum(trans =>trans.Valor) - 
-                p.Transacao.Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Despesa).Sum(trans =>trans.Valor)
+                SaldoLiquido = p.Transacoes.Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Receita).Sum(trans =>trans.Valor) - 
+                p.Transacoes.Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Despesa).Sum(trans =>trans.Valor)
 
             }).ToList();
 
