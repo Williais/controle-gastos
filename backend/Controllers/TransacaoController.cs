@@ -10,7 +10,7 @@ namespace backend.Controllers
     [Route("api/[controller]")]
     public class TransacaoController : ControllerBase
     {
-        //assim como em PessoaController, eu preciso fazer a injeção de dependencia aq
+        //assim como em PessoaController, eu vou fazer a injeção de dependencia aq
 
         private readonly BdContext bd;
 
@@ -42,8 +42,13 @@ namespace backend.Controllers
                 return BadRequest("Os dados da pessoa não podem ser nulos");
             }
 
+            if (novaTransacao.Valor <= 0) { 
+                return BadRequest("o valor não pode ser igual a 0");
+            }
+
             //quero saber se a pessoa existe, senão, retorna NotFound
             var morador = bd.Pessoa.Find(novaTransacao.MoradorId);
+
 
             if (morador == null)
             {

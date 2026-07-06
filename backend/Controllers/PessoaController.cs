@@ -1,7 +1,10 @@
 using backend.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using backend.Data;
+using backend.utils;
 using System.Linq;
+using System.Transactions;
 
 namespace backend.Controllers
 {
@@ -51,12 +54,12 @@ namespace backend.Controllers
 
 
         //endpoint da deleção
-        [HttpDelete("{id}")]
+        [HttpDelete("{idPessoa}")]
         public IActionResult DeletarPessoa(int idPessoa)
         {
             //estou recuperando a pessoa que tenha esse ID
             
-            var pessoa = bd.Pessoas.Find(id);
+            var pessoa = bd.Pessoas.Find(idPessoa);
             //verifico se ela existe
             if (pessoa == null)
             {
@@ -69,6 +72,40 @@ namespace backend.Controllers
 
             return Ok(new { mensagem ="Pessoa apagada"});
             
+        }
+
+        // listagem total
+
+        [HttpGet("totais")] //como eu ja tenho um httpget, preciso dar um nome diferente pra esse
+        public IActionResult ListarTotal()
+        {
+            // aq to buscando as pessoas e carregando as transações juntos com os dados das pessoas, ou seja, usando as duas tabelas
+            var total = bd
+            .Pessoa
+            .Include(p => p.Transacao)
+            .Select(p => new
+            {
+                //chamando os dados da pessoa
+                p.Id,
+                p.Nome,
+                p.Idade,
+
+                //filtrei por tipo e somei em seguida
+                TotalReceita = p.Transacao
+                    .Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Receita)
+                    .Sum(trans => trans.Valor),
+
+                TotalDespesas = p.Transacao
+                        .Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Despesa)
+                        .Sum(trans => trans.Valor),
+
+                //ai ele so vai gerar o saldo
+                SaldoLiquido = p.Transacao.Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Receita).Sum(trans =>trans.Valor) - 
+                p.Transacao.Where(trans => trans.TipoTransacao == TipoTransacaoEnum.Despesa).Sum(trans =>trans.Valor)
+
+            }).ToList();
+
+            return Ok(total);
         }
 
     }
