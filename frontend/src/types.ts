@@ -19,6 +19,8 @@ export interface Transacao {
   moradorId: number;
 }
 
+//Usei 'extends' para herdar os dados de Pessoa e nao precisar repetir as propriedades de id, nome e idade
+
 export interface PessoaTotal extends Pessoa {
   totalReceita: number;
   totalDespesas: number;

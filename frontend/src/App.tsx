@@ -20,9 +20,10 @@ export default function App() {
   const carregarMoradores = async () => {
     // requisiçao GET para /api/Pessoa
     try{
+      //aq eu faço uma requisição para esse endereço
       const url = await fetch("http://localhost:5085/api/Pessoa")
-      const dados = await url.json() 
-      setMoradores(dados)
+      const dados = await url.json() // converto pra json
+      setMoradores(dados)// seto o novo estado
     }catch(e){
       console.error("erro ao buscar", e)
       alert("nao foi possivel conectar ao servidor. o server ta rodando???")
@@ -59,18 +60,19 @@ export default function App() {
   const handleCriarPessoa = async (e: React.FormEvent) => {
     e.preventDefault();
     //requisição POST para /api/Pessoa
-    const dadosPessoa = {
+
+    const dadosPessoa = { //pego os dados que foram digitado e salvo nesse obj js
       nome: nomePessoa,
       idade: idadePessoa
     }
 
     try {
       const url = await fetch("http://localhost:5085/api/Pessoa", {
-        method: 'POST',
+        method: 'POST', //faço uma requisição do tipo POST
         headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json" //propriedade de cabeçalhos pra o backend ler o pacote
           },
-        body: JSON.stringify(dadosPessoa)
+        body: JSON.stringify(dadosPessoa) // converto os dados para string JSON
       })
       
       if (!url.ok) {
@@ -136,13 +138,14 @@ export default function App() {
   const handleDeletarPessoa = async (id: number) => {
       //requisição DELETE para /api/Pessoa/{id}
 
+      //pergunto se a pessoa quer realmente deletar
       const confirmar = window.confirm("certeza que deseja excluir este morador e todas as suas transações, Chefe?");
     if (!confirmar) {return};
 
       try {
 
         const url = await fetch(`http://localhost:5085/api/Pessoa/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE' // faço uma requisição do tipo DELETE
         })
 
         if (!url.ok) {
@@ -154,6 +157,7 @@ export default function App() {
         
         console.log('Pessoa apagada');
 
+        // recarrego tanto moradores quanto totais para ficar atualizado
         carregarMoradores(); 
         carregarTotais();
       } catch (e) {
